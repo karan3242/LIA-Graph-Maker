@@ -34,92 +34,121 @@ fluidPage(
                     "Mine" = "Mine"
                 )
             ),
+            numericInput("numbuer_of_distances",
+                         "No. of points per sample",
+                         value = 5,
+                         min = 1,
+                         max = 10,
+                         step = 1),
             uiOutput("group_selector"),
             uiOutput("pb_filter"),
             uiOutput("cu_filter"),
             
             
             # Plot editing ------------------------------------------------------------
-            h4("Plot editing"),
-            textInput("title", "Title", placeholder = "Enter title..."),
-            checkboxInput("iso_lines", "Toggle Iso Lines", TRUE),
-            fluidRow(
-                column(
-                    4,
-                    numericInput(
-                        "main_shape",
-                        "Main Shape:",
-                        value = 16,
-                        min = 0,
-                        max = 25
-                    )
-                ),
-                column(
-                    4,
-                    numericInput(
-                        "main_size",
-                        "Main Size:",
-                        value = 1,
-                        min = 0,
-                        max = 4,
-                        step = 0.5
-                    )
-                ),
-                column(
-                    4,
-                    textInput("main_color", "Main Color:", value = "black") # Changed from placeholder to value for better reliability
-                )
-            ),
-            fluidRow(column(
-                5,
-                numericInput(
-                    "base_shape",
-                    "Base Shape:",
-                    value = 3,
-                    min = 0,
-                    max = 25
-                )
-            ), column(
-                5,
-                numericInput(
-                    "base_size",
-                    "Base Size:",
-                    value = 0.5,
-                    min = 0,
-                    max = 4,
-                    step = 0.5
-                )
-            )),
-            fluidRow(column(
-                5,
-                textInput("main_iso_color", "Main Iso Color:", value = "grey30")
-            ), column(
-                5,
-                textInput("second_iso_color", "Second Iso Color:", value = "grey70")
-            )),
-            numericInput(
-                "image_sclae",
-                "Img Scale",
-                value = 180,
-                min = 100,
-                max = 200
-            ),
-            # numericInput(
-            #     "image_res",
-            #     "Img resolution",
-            #     value = 72,
-            #     min = 50,
-            #     max = 300
-            # )
-            
-            
         ),
         
         
         # Show a plot of the generated distribution
         mainPanel(
-            plotOutput("plot")#,
-            #tableOutput("table")
+            tabsetPanel(
+                type = "tabs",
+                
+                tabPanel(
+                    "Table",
+                    dataTableOutput("main_table2"),
+                    downloadButton("downloadData", "Download Distance Table")
+                ),
+                
+                tabPanel(
+                    "Graph Maker",
+                    fluidRow(
+                        column(
+                            width = 5,
+                            textInput("title", "Title", 
+                                      placeholder = "Enter title..."),
+                            
+                            checkboxInput("iso_lines", "Toggle Iso Lines", TRUE),
+                            
+                            fluidRow(
+                                column(
+                                    4,
+                                    numericInput(
+                                        "main_shape",
+                                        "Main Shape:",
+                                        value = 16,
+                                        min = 0,
+                                        max = 25
+                                    )
+                                ),
+                                column(
+                                    4,
+                                    numericInput(
+                                        "main_size",
+                                        "Main Size:",
+                                        value = 1,
+                                        min = 0,
+                                        max = 4,
+                                        step = 0.5
+                                    )
+                                ),
+                                column(
+                                    4,
+                                    textInput("main_color", "Main Color:", value = "black") # Changed from placeholder to value for better reliability
+                                )
+                            ),
+                            fluidRow(column(
+                                5,
+                                numericInput(
+                                    "base_shape",
+                                    "Base Shape:",
+                                    value = 3,
+                                    min = 0,
+                                    max = 25
+                                )
+                            ), column(
+                                5,
+                                numericInput(
+                                    "base_size",
+                                    "Base Size:",
+                                    value = 0.5,
+                                    min = 0,
+                                    max = 4,
+                                    step = 0.5
+                                )
+                            )),
+                            fluidRow(column(
+                                5,
+                                textInput("main_iso_color", "Main Iso Color:", value = "grey30")
+                            ), column(
+                                5,
+                                textInput("second_iso_color", "Second Iso Color:", value = "grey70")
+                            )),
+                            numericInput(
+                                "legend_ncol",
+                                "Legend Columns",
+                                value = 4,
+                                min = 1,
+                                max = 6,
+                                step = 1
+                            ),
+                            numericInput(
+                                "image_sclae",
+                                "Img Scale",
+                                value = 180,
+                                min = 100,
+                                max = 200
+                            )
+                        ),
+                        column(
+                            width = 6,
+                            plotOutput("plot")
+                            
+                        )
+                    )
+                    
+                )
+            )
         )
     )
 )

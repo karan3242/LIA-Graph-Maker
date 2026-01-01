@@ -1,4 +1,14 @@
 
+# TODO --------------------------------------------------------------------
+
+# DONE: Give access to the results table which can be downloaded. The regions should bease base on euclidean distance measurements
+
+# DONE: Place leget outside the graph.
+
+# TODO: Option to add a single point insted of the excel sheet
+
+# TODO: These should also be a Id colum for the points selected
+
 # Source files ------------------------------------------------------------
 
 library(shiny)
@@ -35,11 +45,12 @@ graph <- function(df,
                   legend_position = "bottomright",
                   legend = "Legend",
                   legend_col = "red",
+                  legend_ncol = 4,
                   ...) {
   df <- df
-  par(mfrow = c(2,1))
+  par(mfrow = c(2,1), oma = c(6, 0, 0, 0))
   # First Plot
-  par(mar = c(1.5, 4.5, 2, 1))
+  par(mar = c(0.05, 4.5, 4, 1))
   plot(
     df[[isotope_ratios[1]]],
     df[[isotope_ratios[2]]],
@@ -65,7 +76,7 @@ graph <- function(df,
          pch = pch, cex = cex, col = col)
   
   # Scond Plot
-  par(mar = c(4,4.5,0,1))
+  par(mar = c(4, 4.5, 0.05, 1))
   plot(
     df[[isotope_ratios[1]]],
     df[[isotope_ratios[3]]],
@@ -90,11 +101,16 @@ graph <- function(df,
   points(df[[isotope_ratios[1]]],
          df[[isotope_ratios[3]]], 
          pch = pch, cex = cex, col = col)
+  par(xpd = NA)
   legend(
-    legend_position,
+    x = par("usr")[2], # Aligns with the right side of the plot
+    y = par("usr")[3] - (diff(par("usr")[3:4]) * 0.25), # Moves it below the axis
+    xjust = 1, # Right-justified
     legend = legend,
     pch = 16, 
-    col = legend_col
+    ncol = legend_ncol,
+    col = legend_col,
+    bty = "n"
   )
 }
 

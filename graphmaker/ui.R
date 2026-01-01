@@ -18,8 +18,39 @@ fluidPage(
     sidebarLayout(
         sidebarPanel(
             h4("Input Data"),
-            fileInput("iso_file", "Select Csv file"),
-            uiOutput("main_table_names"),
+            selectInput("input_type",
+                        "Select Input Type",
+                        choices = list("Single", "Multiple"),
+                        selected = "Single"),
+            conditionalPanel(
+                condition = "input.input_type == 'Multiple'",
+                fileInput("iso_file", "Select Csv file",
+                          accept = ".csv"),
+                uiOutput("main_table_names"),
+                ),
+            conditionalPanel(
+                condition = "input.input_type == 'Single'",
+                fluidRow(
+                    column(
+                        width = 4,
+                        numericInput("pb64", "Enter 206 Pb:", 
+                                     value = 18.5,
+                                     step = 0.1),
+                    ),
+                    column(
+                        width = 4,
+                         numericInput("pb74", "Enter 207 Pb:", 
+                             value = 15.7,
+                             step = 0.1)
+                    ),
+                    column(
+                        width = 4,
+                                        numericInput("pb84", "Enter 208 Pb:", 
+                             value = 38.7,
+                             step = 0.1)
+                    )
+                )
+            ),
             
             
             # Data base filtering -----------------------------------------------------
@@ -67,8 +98,20 @@ fluidPage(
                             width = 5,
                             textInput("title", "Title", 
                                       placeholder = "Enter title..."),
+                            fluidRow(
+                              column(
+                                  width = 3,
+                                  checkboxInput("iso_lines", 
+                                                "Toggle Iso Lines", TRUE)
+                              ),
+                              column(
+                                width = 3,
+                                checkboxInput("point_lables", 
+                                              "Toggle point lables", FALSE)
+                              )
+                            ),
                             
-                            checkboxInput("iso_lines", "Toggle Iso Lines", TRUE),
+                            
                             
                             fluidRow(
                                 column(

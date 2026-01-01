@@ -5,9 +5,9 @@
 
 # DONE: Place leget outside the graph.
 
-# TODO: Option to add a single point insted of the excel sheet
+# DONE: Option to add a single point insted of the excel sheet
 
-# TODO: These should also be a Id colum for the points selected
+# DONE: These should also be a Id colum for the points selected
 
 # Source files ------------------------------------------------------------
 
@@ -34,7 +34,7 @@ data_base <- read_csv("../data/new_data.csv",
 # Graph ------------------------------------------------------
 
 graph <- function(df, 
-                  isotope_ratios = c("pb64", "pb74", "pb84"),
+                  isotope_ratios = c("pb64", "pb74", "pb84", "id"),
                   df2,
                   isotope_ratios2 = c("206Pb/204Pb", "207Pb/204Pb", "208Pb/204Pb"),
                   title = "Title", 
@@ -46,6 +46,7 @@ graph <- function(df,
                   legend = "Legend",
                   legend_col = "red",
                   legend_ncol = 4,
+                  show_label = TRUE,
                   ...) {
   df <- df
   par(mfrow = c(2,1), oma = c(6, 0, 0, 0))
@@ -74,6 +75,14 @@ graph <- function(df,
   points(df[[isotope_ratios[1]]],
          df[[isotope_ratios[2]]],
          pch = pch, cex = cex, col = col)
+  if(show_label){
+    text(df[[isotope_ratios[1]]] + 0.015,
+         df[[isotope_ratios[2]]] + 0.015,
+         labels = df[[isotope_ratios[4]]],
+         pch = pch, cex = cex, col = col)
+  }
+  
+
   
   # Scond Plot
   par(mar = c(4, 4.5, 0.05, 1))
@@ -101,6 +110,12 @@ graph <- function(df,
   points(df[[isotope_ratios[1]]],
          df[[isotope_ratios[3]]], 
          pch = pch, cex = cex, col = col)
+  if(show_label){
+    text(df[[isotope_ratios[1]]] + 0.015,
+         df[[isotope_ratios[3]]] + 0.015,
+         labels = df[[isotope_ratios[4]]],
+         pch = pch, cex = cex, col = col)
+  }
   par(xpd = NA)
   legend(
     x = par("usr")[2], # Aligns with the right side of the plot

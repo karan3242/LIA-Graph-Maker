@@ -12,7 +12,17 @@ library(shiny)
 # Define server logic required to draw a histogram
 function(input, output, session) {
     
-    main_table1 <- reactive({read_csv(input$iso_file$datapath)})
+    main_table1 <- reactive({
+        if(input$input_type == 'Single'){
+            tibble("pb64" = input$pb64,
+                   "pb74" = input$pb74,
+                   "pb84" = input$pb84,
+                   "id" = "sample")
+        } else {
+            read_csv(input$iso_file$datapath)
+        }
+        
+        })
     
     output$main_table_names <- renderUI({
         choices <- unique(names(main_table1()))
@@ -141,6 +151,17 @@ function(input, output, session) {
                 .[[1]] %in% input$group_selector &
                     .[[2]] %in% input$pb_select &
                     .[[3]] %in% input$cu_select)
+        
+        if(input$input_type == "Single") {
+            xlim <- c(input$pb64 - 0.2, input$pb64 + 0.2)
+            ylim74 <- c(input$pb74 - 0.2, input$pb74 + 0.2)
+            ylim84 <- c(input$pb84 - 0.2, input$pb84 + 0.2)
+        } else {
+            xlim <- NULL
+            ylim74 <- NULL
+            ylim84 <- NULL
+        }
+        
         graph(df = main_table2(),
               isotope_ratios = input$colnames_select,
               df2 = base_table3,
@@ -156,7 +177,11 @@ function(input, output, session) {
               iso_lines = input$iso_lines,
               t_color = input$main_iso_color,
               iso_color = input$second_iso_color,
-              legend_ncol = input$legend_ncol)}, 
+              legend_ncol = input$legend_ncol,
+              xlim = xlim,
+              ylim74 = ylim74,
+              ylim84 = ylim84,
+              show_label = input$point_lables)}, 
         width = function(){3 * req(input$image_sclae)}, 
         height = function(){4 * req(input$image_sclae)}
         )

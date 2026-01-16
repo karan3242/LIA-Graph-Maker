@@ -90,6 +90,10 @@ fluidPage(
                     dataTableOutput("main_table2"),
                     downloadButton("downloadData", "Download Distance Table")
                 ),
+                tabPanel(
+                    "Summary",
+                    dataTableOutput("summary_table")
+                ),
                 
                 tabPanel(
                     "Graph Maker",

@@ -35,8 +35,10 @@ function(input, output, session) {
 
     
     main_table2 <- reactive({
+      req(input$colnames_select)
+      
         main_table1() %>% 
-            select(input$colnames_select)
+            select(all_of(head(input$colnames_select, 4)))
     })
     
 
@@ -46,11 +48,11 @@ function(input, output, session) {
 
 
     base_table1 <- reactive({data_base %>% 
-            select(input$base_group, `Presence of Pb`, `Presence of Cu`, `206Pb/204Pb`, `207Pb/204Pb`, `208Pb/204Pb`)})
+            select(input$base_group, `Presence of Pb`, `Presence of Cu`, `206Pb/204Pb`, `207Pb/204Pb`, `208Pb/204Pb`, everything())})
     
     
     output$pb_filter <- renderUI({
-        choices <- unique(base_table1()[[2]])
+        choices <- unique(base_table1()$`Presence of Pb`)
         selectInput("pb_select",
                     "Select Pb Values",
                     choices = choices,
@@ -59,7 +61,7 @@ function(input, output, session) {
     })
     
     output$cu_filter <- renderUI({
-        choices <- unique(base_table1()[[3]])
+        choices <- unique(base_table1()$`Presence of Cu`)
         selectInput("cu_select",
                     "Select Cu Values",
                     choices = choices,
@@ -76,40 +78,46 @@ function(input, output, session) {
         req(main_table2(), base_table1(), input$pb_select, input$cu_select)
         
         base_table2 <- base_table1() %>% 
-            filter(.[[2]] %in% input$pb_select & .[[3]] %in% input$cu_select)
+            filter(base_table1()$`Presence of Pb` %in% input$pb_select & 
+                     base_table1()$`Presence of Cu` %in% input$cu_select)
         
         cols_main <- c("pb64", "pb74", "pb84")
         cols_base <- c("206Pb/204Pb", "207Pb/204Pb", "208Pb/204Pb")
         
-        results <- apply(main_table2()[, cols_main[1:3]], 1, function(row1) {
-            apply(base_table2[, cols_base], 1, function(row2) {
-                sqrt(sum((row1 - row2)^2))
-            })
-        })
+        indices <- expand.grid(
+          main_idx = seq_len(nrow(main_table2())),
+          base_idx = seq_len(nrow(base_table2))
+        )
         
-        colnames(results) <- main_table2()[[4]] # Id Colum
+        m1 <- as.matrix(main_table2()[indices$main_idx, cols_main])
+        m2 <- as.matrix(base_table2[indices$base_idx, cols_base])
         
-        distances <- as_tibble(results)
-        distances$regions <- base_table2[[1]] # regions colum
+        distances <- sqrt(rowSums((m1 - m2)^2))
         
-        distances %>% 
-            pivot_longer(cols = -regions, names_to = "Sample", values_to = "Distances")
+        long_results <- data.frame(
+          main_row = indices$main_idx,
+          base_row = indices$base_idx,
+          distance = distances
+        )
         
+        bind_cols("Distance"= long_results$distance, main_table2()[long_results$main_row, ], base_table2[long_results$base_row, ])
     })
     
     distance_table2 <- reactive({
         req(distance_table(), input$numbuer_of_distances)
         
         distance_table() %>%
-            group_by(Sample) %>% 
-            slice_min(order_by = Distances, n = input$numbuer_of_distances, with_ties = FALSE) %>% 
+            group_by(pick(5)) %>% 
+            slice_min(order_by = Distance, 
+                      n = input$numbuer_of_distances, 
+                      with_ties = FALSE) %>% 
             ungroup()
     })
     
 
     output$group_selector <- renderUI({
         choices <- unique(base_table1()[[1]])
-        choices_select <- unique(distance_table2()[[1]])
+        choices_select <- unique(distance_table2()[[6]])
         selectInput("group_selector",
                     "Select Sample Groups",
                     choices = choices,
@@ -119,17 +127,48 @@ function(input, output, session) {
     
     distance_table3 <- reactive({
         req(distance_table())
-        distance_table() %>%
-            filter(regions %in% input$group_selector) %>% 
-            group_by(Sample) %>% 
-            slice_min(order_by = Distances, n = input$numbuer_of_distances, with_ties = FALSE) %>% 
-            ungroup()
-            
+      
+        table <- distance_table() %>%
+          filter(distance_table()[[6]] %in% input$group_selector) %>% 
+          group_by(pick(5)) %>% 
+          slice_min(order_by = Distance, 
+                    n = input$numbuer_of_distances, 
+                    with_ties = FALSE) %>% 
+          ungroup()
         
+        table
+       
+       
+      
     })
     
     output$main_table2 <- renderDataTable({
-        distance_table3()
+      distance_table3()
+
+    })
+    
+    summary_table <- reactive({
+      # Ensure inputs are available before proceeding
+      req(distance_table3(), input$base_group)
+
+      group_cols <- switch(input$base_group,
+                           "Mine"             = c("Country", "corrected Region", "Mine"),
+                           "corrected Region" = c("Country", "corrected Region"),
+                           "Country"          = "Country",
+                           "Country"          # Default fallback
+      )
+
+      distance_table3() %>% 
+         select(all_of(group_cols)) %>%
+         group_by(across(all_of(group_cols))) %>%
+         summarize(
+          Count = n(),
+           .groups = "drop"
+          )
+    })
+
+    output$summary_table <- renderDataTable({
+      summary_table()
     })
     
     output$downloadData <- downloadHandler(

@@ -100,7 +100,7 @@ function(input, output, session) {
           distance = distances
         )
         
-        bind_cols("Distance"= long_results$distance, main_table2()[long_results$main_row, ], base_table2[long_results$base_row, ])
+        bind_cols("Distance"= round(long_results$distance, 4), main_table2()[long_results$main_row, ], base_table2[long_results$base_row, ])
     })
     
     distance_table2 <- reactive({
@@ -126,7 +126,7 @@ function(input, output, session) {
     })
     
     distance_table3 <- reactive({
-        req(distance_table())
+        req(distance_table(), main_table2())
       
         table <- distance_table() %>%
           filter(distance_table()[[6]] %in% input$group_selector) %>% 
@@ -134,16 +134,21 @@ function(input, output, session) {
           slice_min(order_by = Distance, 
                     n = input$numbuer_of_distances, 
                     with_ties = FALSE) %>% 
-          ungroup()
+          ungroup() 
         
-        table
+        rm_names <- names(main_table2())[-4]
+        id_name <- names(main_table2())[4]
+        table %>% 
+        select(Distance, contains(id_name), Country, `corrected Region`, Mine, everything()) %>% 
+        select(-`Full reference`, -`Region/Province`, -contains(rm_names))
        
        
       
     })
     
     output$main_table2 <- renderDataTable({
-      distance_table3()
+     
+        distance_table3()
 
     })
     

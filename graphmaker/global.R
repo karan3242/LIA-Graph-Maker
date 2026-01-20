@@ -11,10 +11,17 @@
 
 # Source files ------------------------------------------------------------
 
-library(shiny)
-library(tidyverse)
-library(patchwork)
-library(readxl)
+
+pkgs <- c("shiny", "tidyverse", "patchwork", "readxl")
+missing_pkgs <- pkgs[!(pkgs %in% installed.packages()[, "Package"])]
+if (length(missing_pkgs) > 0) {
+  install.packages(missing_pkgs)
+}
+pkginst <- lapply(pkgs, library, character.only = TRUE)
+
+
+
+
 if(!requireNamespace("PbIso")){
   devtools::install_github("shereearmistead/PbIso")
 }
